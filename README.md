@@ -2,13 +2,6 @@
 
 Personal agent workflow installer for OpenCode, Kilo CLI, Codex, Claude Code, Cursor, and GitHub Copilot.
 
-Leaserage installs:
-
-- shared agent instructions
-- workflow skills
-- provider config templates
-- MCP templates for Serena, CodeGraph, and DBHub
-
 ## Providers
 
 Supported provider IDs:
