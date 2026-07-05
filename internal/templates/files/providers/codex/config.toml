@@ -1,0 +1,12 @@
+[mcp_servers.serena]
+command = "uvx"
+args = ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server"]
+
+[mcp_servers.codegraph]
+command = "codegraph"
+args = ["serve", "--mcp"]
+
+[mcp_servers.dbhub]
+command = "npx"
+args = ["-y", "@bytebase/dbhub"]
+enabled = false

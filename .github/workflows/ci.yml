@@ -1,0 +1,69 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - run: go test ./...
+      - run: go run ./cmd/leaserage --help
+      - run: bash -n scripts/install.sh
+      - run: bash -n scripts/uninstall.sh
+
+  package:
+    runs-on: ubuntu-latest
+    needs: validate
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            ext: tar.gz
+          - goos: linux
+            goarch: arm64
+            ext: tar.gz
+          - goos: windows
+            goarch: amd64
+            ext: zip
+          - goos: windows
+            goarch: arm64
+            ext: zip
+          - goos: darwin
+            goarch: amd64
+            ext: tar.gz
+          - goos: darwin
+            goarch: arm64
+            ext: tar.gz
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Build
+        run: |
+          mkdir -p dist/package
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/package/leaserage.exe ./cmd/leaserage
+          else
+            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/package/leaserage ./cmd/leaserage
+          fi
+      - name: Archive tar.gz
+        if: matrix.ext == 'tar.gz'
+        run: |
+          tar -czf "dist/leaserage-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" -C dist/package .
+      - name: Archive zip
+        if: matrix.ext == 'zip'
+        run: |
+          cd dist/package
+          zip "../leaserage-${{ matrix.goos }}-${{ matrix.goarch }}.zip" *
+      - uses: actions/upload-artifact@v4
+        with:
+          name: leaserage-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/leaserage-${{ matrix.goos }}-${{ matrix.goarch }}.*

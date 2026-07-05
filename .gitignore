@@ -1,0 +1,15 @@
+.serena/
+dist/
+
+!.gitignore
+
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+
+!AGENTS.md
+
+!internal/templates/files/agents/
+!internal/templates/files/agents/AGENTS.md
+!internal/templates/files/providers/claude-code/.mcp.json
+!internal/templates/files/providers/cursor/mcp.json
