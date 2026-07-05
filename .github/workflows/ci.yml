@@ -28,35 +28,12 @@ jobs:
             asset: leaserage-linux-amd64
             ext: tar.gz
           - goos: linux
-            goarch: 386
-            asset: leaserage-linux-386
-            ext: tar.gz
-          - goos: linux
             goarch: arm64
             asset: leaserage-linux-arm64
-            ext: tar.gz
-          - goos: linux
-            goarch: arm
-            goarm: "5"
-            asset: leaserage-linux-armv5
-            ext: tar.gz
-          - goos: linux
-            goarch: arm
-            goarm: "6"
-            asset: leaserage-linux-armv6
-            ext: tar.gz
-          - goos: linux
-            goarch: arm
-            goarm: "7"
-            asset: leaserage-linux-armv7
             ext: tar.gz
           - goos: windows
             goarch: amd64
             asset: leaserage-windows-amd64
-            ext: zip
-          - goos: windows
-            goarch: 386
-            asset: leaserage-windows-386
             ext: zip
           - goos: windows
             goarch: arm64
@@ -79,7 +56,6 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-          GOARM: ${{ matrix.goarm }}
         run: |
           mkdir -p dist/package
           if [ "${GOOS}" = "windows" ]; then

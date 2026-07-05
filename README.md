@@ -52,13 +52,13 @@ leaserage uninstall --provider opencode,kilo
 Install the latest release and immediately configure providers:
 
 ```bash
-curl -fsSL https://github.com/vomkhang/leaserage/releases/latest/download/install.sh | bash -s -- install --provider opencode,kilo
+curl -fsSL https://github.com/leaser019/leaserage/releases/latest/download/install.sh | bash -s -- install --provider opencode,kilo
 ```
 
 Install a pinned version:
 
 ```bash
-LEASERAGE_VERSION=download/v0.1.0 curl -fsSL https://github.com/vomkhang/leaserage/releases/latest/download/install.sh | bash -s -- install --provider codex,claude-code
+LEASERAGE_VERSION=download/v0.0.2 curl -fsSL https://github.com/leaser019/leaserage/releases/latest/download/install.sh | bash -s -- install --provider codex,claude-code
 ```
 
 Use another fork or repository:
@@ -72,13 +72,13 @@ LEASERAGE_REPO=your-name/leaserage curl -fsSL https://github.com/your-name/lease
 Install the latest release and configure providers:
 
 ```powershell
-& ([scriptblock]::Create((irm "https://github.com/vomkhang/leaserage/releases/latest/download/install.ps1"))) install --provider opencode,kilo
+& ([scriptblock]::Create((irm "https://github.com/leaser019/leaserage/releases/latest/download/install.ps1"))) install --provider opencode,kilo
 ```
 
 Install a pinned version:
 
 ```powershell
-& ([scriptblock]::Create((irm "https://github.com/vomkhang/leaserage/releases/latest/download/install.ps1"))) -Version "download/v0.1.0" install --provider codex,claude-code
+& ([scriptblock]::Create((irm "https://github.com/leaser019/leaserage/releases/latest/download/install.ps1"))) -Version "download/v0.0.2" install --provider codex,claude-code
 ```
 
 Use another fork or repository:
@@ -93,13 +93,8 @@ Download the matching asset from GitHub Releases:
 
 ```txt
 leaserage-linux-amd64.tar.gz
-leaserage-linux-386.tar.gz
 leaserage-linux-arm64.tar.gz
-leaserage-linux-armv5.tar.gz
-leaserage-linux-armv6.tar.gz
-leaserage-linux-armv7.tar.gz
 leaserage-windows-amd64.zip
-leaserage-windows-386.zip
 leaserage-windows-arm64.zip
 leaserage-darwin-amd64.tar.gz
 leaserage-darwin-arm64.tar.gz
@@ -129,7 +124,7 @@ sha256sum -c checksums.txt
 ## Build From Source
 
 ```bash
-git clone https://github.com/vomkhang/leaserage.git
+git clone https://github.com/leaser019/leaserage.git
 cd leaserage
 go build -o leaserage ./cmd/leaserage
 ./leaserage install --provider opencode,kilo
@@ -184,6 +179,6 @@ git push origin v0.1.0
 
 The `release` workflow builds and publishes assets for:
 
-- Linux: `amd64`, `386`, `arm64`, `armv5`, `armv6`, `armv7`
-- Windows: `amd64`, `386`, `arm64`
+- Linux: `amd64`, `arm64`
+- Windows: `amd64`, `arm64`
 - macOS: `amd64`, `arm64`

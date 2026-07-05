@@ -1,13 +1,12 @@
 param(
   [string]$Version = "latest",
-  [string]$Repo = $(if ($env:LEASERAGE_REPO) { $env:LEASERAGE_REPO } else { "vomkhang/leaserage" }),
+  [string]$Repo = $(if ($env:LEASERAGE_REPO) { $env:LEASERAGE_REPO } else { "leaser019/leaserage" }),
   [Parameter(ValueFromRemainingArguments = $true)]
   [string[]]$CliArgs = @()
 )
 
 $ErrorActionPreference = "Stop"
 $arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture) {
-  "X86" { "386" }
   "X64" { "amd64" }
   "Arm64" { "arm64" }
   default { throw "unsupported architecture: $([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)" }
