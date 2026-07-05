@@ -33,10 +33,30 @@ Preview without writing:
 leaserage install --provider opencode,kilo --dry-run
 ```
 
+Install without MCP config:
+
+```bash
+leaserage install --provider opencode,kilo --mcp none
+```
+
+Install and initialize supported RTK hooks:
+
+```bash
+leaserage install --provider claude-code,cursor,opencode,codex,github-copilot --hook rtk
+```
+
+`--with-rtk` is an alias for `--hook rtk`.
+
 Check installed config:
 
 ```bash
 leaserage doctor --provider opencode,kilo
+```
+
+Check MCP and RTK hook dependencies:
+
+```bash
+leaserage doctor --provider claude-code,cursor --hook rtk
 ```
 
 Remove Leaserage-managed files:
@@ -150,6 +170,38 @@ claude-code     ~/.claude
 cursor          ~/.cursor
 github-copilot  ~/.github-copilot
 ```
+
+## MCP And Hook Options
+
+Default install mode writes provider instructions, Leaserage skills, and MCP config where the provider supports MCP.
+
+```txt
+--mcp default   write MCP config templates when supported (default)
+--mcp none      skip MCP config; OpenCode and Kilo still receive instruction-only config
+--hook none     do not initialize command-output hooks (default)
+--hook rtk      use official RTK install/init for supported providers
+```
+
+MCP servers configured by default:
+
+```txt
+serena     uvx --from git+https://github.com/oraios/serena serena start-mcp-server
+codegraph  codegraph serve --mcp
+dbhub      npx -y @bytebase/dbhub (disabled by default)
+```
+
+RTK hook support uses the official `rtk init` commands from RTK. If `rtk` is missing on Linux/macOS, Leaserage runs the official installer first. On native Windows, install RTK manually or use WSL for full hook support.
+
+```txt
+claude-code      rtk init --global
+cursor           rtk init --global --agent cursor
+opencode         rtk init --global --opencode
+github-copilot   rtk init --global --copilot
+codex            rtk init --global --codex
+kilo             prompt-level guidance only; no global RTK hook is initialized
+```
+
+RTK is not an MCP server. It is a CLI proxy plus provider hook/plugin or prompt-level guidance that rewrites supported commands through `rtk rewrite`.
 
 Use `--home` for testing or custom install roots:
 

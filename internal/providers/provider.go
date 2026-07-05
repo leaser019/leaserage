@@ -9,9 +9,11 @@ type Provider struct {
 }
 
 type ProviderFile struct {
-	TemplatePath string
-	TargetPath   string
-	MergeMode    MergeMode
+	TemplatePath      string
+	NoMCPTemplatePath string
+	TargetPath        string
+	MergeMode         MergeMode
+	Kind              FileKind
 }
 
 type MergeMode string
@@ -19,4 +21,11 @@ type MergeMode string
 const (
 	MergeReplaceManaged MergeMode = "replace-managed"
 	MergeCreateOnly     MergeMode = "create-only"
+)
+
+type FileKind string
+
+const (
+	FileGeneral FileKind = "general"
+	FileMCP     FileKind = "mcp"
 )

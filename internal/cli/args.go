@@ -12,14 +12,16 @@ type Command struct {
 	Home     string
 	Force    bool
 	Verbose  bool
+	MCP      string
+	Hook     string
 }
 
 func Parse(args []string) (Command, error) {
 	if len(args) == 0 {
-		return Command{Name: "help"}, nil
+		return Command{Name: "help", MCP: "default", Hook: "none"}, nil
 	}
 
-	cmd := Command{Name: args[0]}
+	cmd := Command{Name: args[0], MCP: "default", Hook: "none"}
 	if cmd.Name == "--help" || cmd.Name == "-h" {
 		cmd.Name = "help"
 	}
@@ -44,6 +46,26 @@ func Parse(args []string) (Command, error) {
 			cmd.Force = true
 		case "--verbose":
 			cmd.Verbose = true
+		case "--mcp":
+			if i+1 >= len(args) {
+				return cmd, errors.New("--mcp requires a value")
+			}
+			if args[i+1] != "default" && args[i+1] != "none" {
+				return cmd, errors.New("unsupported --mcp value: " + args[i+1])
+			}
+			cmd.MCP = args[i+1]
+			i++
+		case "--hook":
+			if i+1 >= len(args) {
+				return cmd, errors.New("--hook requires a value")
+			}
+			if args[i+1] != "none" && args[i+1] != "rtk" {
+				return cmd, errors.New("unsupported --hook value: " + args[i+1])
+			}
+			cmd.Hook = args[i+1]
+			i++
+		case "--with-rtk":
+			cmd.Hook = "rtk"
 		case "--help", "-h":
 			cmd.Name = "help"
 		default:

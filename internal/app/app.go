@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/vomkhang/leaserage/internal/cli"
@@ -60,7 +62,7 @@ func (a *App) install(cmd cli.Command) int {
 	}
 
 	for _, provider := range selected {
-		plan, err := install.BuildPlan(home, provider)
+		plan, err := install.BuildPlan(home, provider, planOptions(cmd))
 		if err != nil {
 			fmt.Fprintf(a.Stderr, "plan %s: %v\n", provider.ID, err)
 			return 1
@@ -86,11 +88,13 @@ func (a *App) doctor(cmd cli.Command) int {
 
 	allOK := true
 	for _, provider := range selected {
-		for _, result := range install.Doctor(home, provider) {
+		for _, result := range install.Doctor(home, provider, planOptions(cmd)) {
 			status := "ok"
 			if !result.OK {
 				status = "missing"
-				allOK = false
+				if result.Required {
+					allOK = false
+				}
 			}
 			if result.Info == "" {
 				fmt.Fprintf(a.Stdout, "%s provider=%s check=%s kind=%s\n", status, provider.ID, result.Name, result.Kind)
@@ -112,7 +116,7 @@ func (a *App) uninstall(cmd cli.Command) int {
 	}
 
 	for _, provider := range selected {
-		plan, err := install.BuildPlan(home, provider)
+		plan, err := install.BuildPlan(home, provider, install.PlanOptions{MCPMode: install.MCPMode(cmd.MCP)})
 		if err != nil {
 			fmt.Fprintf(a.Stderr, "plan %s: %v\n", provider.ID, err)
 			return 1
@@ -158,10 +162,20 @@ func HelpText() string {
 	return `leaserage installs personal agent workflow configs.
 
 Usage:
-  leaserage install --provider opencode,kilo [--dry-run] [--home /tmp/home]
-  leaserage doctor --provider opencode,kilo [--home /tmp/home]
-  leaserage uninstall --provider opencode,kilo [--dry-run] [--home /tmp/home]
+  leaserage install --provider opencode,kilo [--mcp default|none] [--hook none|rtk] [--dry-run] [--home /tmp/home]
+  leaserage doctor --provider opencode,kilo [--mcp default|none] [--hook none|rtk] [--home /tmp/home]
+  leaserage uninstall --provider opencode,kilo [--mcp default|none] [--dry-run] [--home /tmp/home]
   leaserage providers
   leaserage version
 `
+}
+
+func planOptions(cmd cli.Command) install.PlanOptions {
+	_, err := exec.LookPath("rtk")
+	return install.PlanOptions{
+		MCPMode:      install.MCPMode(cmd.MCP),
+		Hook:         install.HookMode(cmd.Hook),
+		RuntimeOS:    runtime.GOOS,
+		RTKInstalled: err == nil,
+	}
 }

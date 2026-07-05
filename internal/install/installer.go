@@ -3,15 +3,29 @@ package install
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/vomkhang/leaserage/internal/providers"
 	"github.com/vomkhang/leaserage/internal/templates"
 )
 
-func BuildPlan(home string, provider providers.Provider) (Plan, error) {
+func BuildPlan(home string, provider providers.Provider, opts PlanOptions) (Plan, error) {
+	if opts.MCPMode == "" {
+		opts.MCPMode = MCPDefault
+	}
+	if opts.Hook == "" {
+		opts.Hook = HookNone
+	}
+
 	plan := Plan{ProviderID: provider.ID}
 	for _, file := range provider.Files {
+		if opts.MCPMode == MCPNone && file.Kind == providers.FileMCP {
+			if file.NoMCPTemplatePath == "" {
+				continue
+			}
+			file.TemplatePath = file.NoMCPTemplatePath
+		}
 		body, err := templates.Read(file.TemplatePath)
 		if err != nil {
 			return plan, err
@@ -41,6 +55,20 @@ func BuildPlan(home string, provider providers.Provider) (Plan, error) {
 			Mode:   providers.MergeReplaceManaged,
 		})
 	}
+
+	if opts.Hook == HookRTK {
+		canRunRTK := opts.RTKInstalled
+		if !opts.RTKInstalled && (opts.RuntimeOS == "linux" || opts.RuntimeOS == "darwin") {
+			plan.Ops = append(plan.Ops, Operation{
+				Kind:    OpRunCommand,
+				Command: []string{"sh", "-c", "curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh"},
+			})
+			canRunRTK = true
+		}
+		if command := rtkInitCommand(provider.ID); canRunRTK && len(command) > 0 {
+			plan.Ops = append(plan.Ops, Operation{Kind: OpRunCommand, Command: command})
+		}
+	}
 	return plan, nil
 }
 
@@ -58,9 +86,43 @@ func Apply(plan Plan, opts Options) error {
 			if err := WriteManagedFile(op.Target, op.Body, opts.DryRun); err != nil {
 				return err
 			}
+		case OpRunCommand:
+			if opts.DryRun {
+				continue
+			}
+			if len(op.Command) == 0 {
+				return fmt.Errorf("empty command operation")
+			}
+			cmd := exec.Command(op.Command[0], op.Command[1:]...)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			cmd.Stdin = os.Stdin
+			if opts.Home != "" {
+				cmd.Env = append(os.Environ(), "PATH="+filepath.Join(opts.Home, ".local", "bin")+string(os.PathListSeparator)+os.Getenv("PATH"))
+			}
+			if err := cmd.Run(); err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("unsupported operation: %s", op.Kind)
 		}
 	}
 	return nil
+}
+
+func rtkInitCommand(providerID string) []string {
+	switch providerID {
+	case "claude-code":
+		return []string{"rtk", "init", "--global"}
+	case "cursor":
+		return []string{"rtk", "init", "--global", "--agent", "cursor"}
+	case "opencode":
+		return []string{"rtk", "init", "--global", "--opencode"}
+	case "github-copilot":
+		return []string{"rtk", "init", "--global", "--copilot"}
+	case "codex":
+		return []string{"rtk", "init", "--global", "--codex"}
+	default:
+		return nil
+	}
 }
