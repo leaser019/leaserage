@@ -6,7 +6,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$arch = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq "Arm64") { "arm64" } else { "amd64" }
+$arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture) {
+  "X86" { "386" }
+  "X64" { "amd64" }
+  "Arm64" { "arm64" }
+  default { throw "unsupported architecture: $([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)" }
+}
 $name = "leaserage-windows-$arch.zip"
 $url = "https://github.com/$Repo/releases/$Version/download/$name"
 $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("leaserage-" + [guid]::NewGuid())
