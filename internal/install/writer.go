@@ -6,9 +6,12 @@ import (
 	"time"
 )
 
-func WriteManagedFile(path string, body string, dryRun bool) error {
+func WriteManagedFile(path string, body string, perm os.FileMode, dryRun bool) error {
 	if dryRun {
 		return nil
+	}
+	if perm == 0 {
+		perm = 0o644
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
@@ -19,7 +22,7 @@ func WriteManagedFile(path string, body string, dryRun bool) error {
 			return err
 		}
 	}
-	return os.WriteFile(path, []byte(body), 0o644)
+	return os.WriteFile(path, []byte(body), perm)
 }
 
 func copyFile(src string, dst string) error {

@@ -1,6 +1,10 @@
 package install
 
-import "github.com/vomkhang/leaserage/internal/providers"
+import (
+	"os"
+
+	"github.com/vomkhang/leaserage/internal/providers"
+)
 
 type OperationKind string
 
@@ -15,6 +19,7 @@ type Operation struct {
 	Target  string
 	Body    string
 	Mode    providers.MergeMode
+	Perm    os.FileMode
 	Command []string
 }
 

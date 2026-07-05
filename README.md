@@ -2,6 +2,61 @@
 
 Personal agent workflow installer for OpenCode, Kilo CLI, Codex, Claude Code, Cursor, and GitHub Copilot.
 
+## Workflow Orchestration
+
+Leaserage installs a compact workflow router inspired by Radforge's orchestration model:
+
+- `AGENTS.md` decides when to route, pause, validate, or close out work.
+- Skills decide how to run one focused mode such as systematic debugging, code review, planning, execution, TDD, verification, or brainstorming.
+- One primary workflow skill should be active at a time. A skill may finish, pause for approval, or hand off to one next skill.
+
+High-level flow:
+
+```mermaid
+flowchart TD
+  A([Start task]) --> B{Tiny and low risk?}
+  B -- Yes --> C[Handle directly]
+  B -- No --> R[Route through AGENTS.md]
+  R --> S{Primary work mode}
+  S -->|Broken behavior| D[systematic-debugging]
+  S -->|Review request| V[receiving/requesting-code-review]
+  S -->|Unclear direction| N[brainstorming]
+  S -->|Needs sequencing| P[writing-plans]
+  S -->|Approved execution| I[executing-plans]
+  S -->|Validation only| T[verification-before-completion]
+  D --> I
+  V --> D
+  N --> P
+  P --> I
+  I --> T
+  T --> Z([Closeout])
+  C --> Z
+```
+
+Everyday routing:
+
+```txt
+systematic-debugging           broken behavior, failing command, regression, incident
+receiving-code-review          respond to incoming review feedback
+requesting-code-review         inspect completed work for bugs, risk, missing validation
+brainstorming                  unclear goal, open design question, multiple viable approaches
+writing-plans                  clear work that needs sequencing, checkpoints, rollback thinking
+executing-plans                execute an approved written plan inline
+subagent-driven-development    execute an approved plan with task-focused subagents
+test-driven-development        implement behavior changes or bugfixes test-first
+verification-before-completion validate before claiming completion
+direct                         tiny one-step task where routing would add noise
+```
+
+Escalation rules:
+
+- ambiguity during execution -> `brainstorming`
+- growing scope or dependency ordering -> `writing-plans`
+- failed validation or reproduced breakage -> `systematic-debugging`
+- meaningful design, sequencing, destructive, or irreversible decision -> pause for approval
+
+For the full workflow state machine, approval gates, handoffs, and stop states, see `documents/leaserage-full-orchestration.md`.
+
 ## Providers
 
 Supported provider IDs:
@@ -214,7 +269,7 @@ find "$tmp_home" -type f | sort
 ## Development
 
 ```bash
-go test ./...
+go verification-before-completion ./...
 go run ./cmd/leaserage --help
 ```
 

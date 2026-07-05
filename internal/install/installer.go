@@ -35,6 +35,7 @@ func BuildPlan(home string, provider providers.Provider, opts PlanOptions) (Plan
 			Target: filepath.Join(home, filepath.FromSlash(file.TargetPath)),
 			Body:   body,
 			Mode:   file.MergeMode,
+			Perm:   0o644,
 		})
 	}
 
@@ -43,16 +44,20 @@ func BuildPlan(home string, provider providers.Provider, opts PlanOptions) (Plan
 		return plan, err
 	}
 	for _, skillFile := range skillFiles {
-		body, err := templates.Read(skillFile)
+		body, err := templates.Read(skillFile.Path)
 		if err != nil {
 			return plan, err
 		}
-		name := filepath.Base(filepath.Dir(skillFile))
+		relativeSkillPath, err := filepath.Rel("skills", filepath.FromSlash(skillFile.Path))
+		if err != nil {
+			return plan, err
+		}
 		plan.Ops = append(plan.Ops, Operation{
 			Kind:   OpCopySkill,
-			Target: filepath.Join(home, filepath.FromSlash(provider.SkillDir), name, "SKILL.md"),
+			Target: filepath.Join(home, filepath.FromSlash(provider.SkillDir), relativeSkillPath),
 			Body:   body,
 			Mode:   providers.MergeReplaceManaged,
+			Perm:   normalizedPerm(skillFile.Perm),
 		})
 	}
 
@@ -83,7 +88,7 @@ func Apply(plan Plan, opts Options) error {
 					return err
 				}
 			}
-			if err := WriteManagedFile(op.Target, op.Body, opts.DryRun); err != nil {
+			if err := WriteManagedFile(op.Target, op.Body, op.Perm, opts.DryRun); err != nil {
 				return err
 			}
 		case OpRunCommand:
@@ -108,6 +113,13 @@ func Apply(plan Plan, opts Options) error {
 		}
 	}
 	return nil
+}
+
+func normalizedPerm(perm os.FileMode) os.FileMode {
+	if perm&0o111 != 0 {
+		return 0o755
+	}
+	return 0o644
 }
 
 func rtkInitCommand(providerID string) []string {

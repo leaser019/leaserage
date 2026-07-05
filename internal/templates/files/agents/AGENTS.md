@@ -16,14 +16,15 @@ Use one active primary workflow skill at a time. A skill may hand off to exactly
 
 Use this routing for non-trivial work. Trivial one-step requests may skip it when that is clearly lower friction and still safe.
 
-1. Broken behavior, failing command, regression, or incident -> `debug`
-2. Explicit review request or risk assessment of existing changes -> `review`
+1. Broken behavior, failing command, regression, or incident -> `systematic-debugging`
+2. Explicit review request or risk assessment of existing changes -> `receiving-code-review` or `requesting-code-review`
 3. Ambiguous goal, open design question, or multiple reasonable approaches -> `brainstorming`
-4. Clear work that needs sequencing, dependency ordering, or rollback thinking -> `plan`
-5. Clear approved code/docs/config change -> `implement`
-6. Validation-only request or confidence check -> `test`
+4. Clear work that needs sequencing, dependency ordering, or rollback thinking -> `writing-plans`
+5. Approved plan execution -> `executing-plans` or `subagent-driven-development`
+6. Behavior change or bugfix implementation -> `test-driven-development`
+7. Validation before completion or confidence check -> `verification-before-completion`
 
-Escalate when the facts change: ambiguity goes back to `brainstorming`, growing scope goes to `plan`, broken validation goes to `debug`, and repository-local instructions always win.
+Escalate when the facts change: ambiguity goes back to `brainstorming`, growing scope goes to `writing-plans`, broken validation goes to `systematic-debugging`, and repository-local instructions always win.
 
 ## Task Size Routing
 
